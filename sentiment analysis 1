@@ -1,0 +1,12 @@
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+restaurant=pd.read_csv('restaurants_60601-60606.csv')
+reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
+restaurant['label'] = np.where(restaurant['rating']>=4,1,0)
+restaurant['label'].value_counts()
+positive=restaurant[restaurant['label']==1]
+positive['rating'].value_counts().plot(kind="bar")
+plt.xlabel("rating")
+plt.ylabel('number of restaurants')
+plt.show()
