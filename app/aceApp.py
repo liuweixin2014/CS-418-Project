@@ -1,0 +1,319 @@
+import sys
+import csv
+import requests
+import json
+
+#websites
+#
+#https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.pdf
+#https://www.census.gov/data/developers/data-sets.html
+#token is needed for centennial census data
+#
+#https://dev.socrata.com/docs/endpoints.html
+#https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2
+#https://data.cityofchicago.org/Health-Human-Services/Food-Inspections/4ijn-s7e5
+#https://data.cityofchicago.org/Community-Economic-Development/Business-Licenses/r5kz-chrr
+#
+#https://www.ncdc.noaa.gov/cdo-web/webservices/v2
+#token is needed for weather calls
+
+
+#get all crime data within 1.5 block radius and from 2014 to present
+def getCrimeHistory(lat, long):
+    print('getting crime history')
+
+    #need to get lattitude and longitude from other database
+    lattitude = lat
+    longitude = long
+    # 1.5 city block radius in meters is 301 rounded up where 1 block is 1/8 a mile
+    radiusInMeters = '301'
+    baseUrl = 'https://data.cityofchicago.org/resource/6zsd-86xi.json'
+    select = '$select=primary_type,description,location_description,arrest,year'
+    where = '$where=within_circle(location, ' + lattitude + ', ' + longitude + ', ' + radiusInMeters + ') AND year>2013'
+    orderby = '$order=year DESC,primary_type ASC'
+    url = baseUrl + '?' + select + '&' + where + '&' + orderby
+
+    response = requests.get(url)
+
+    crimeDict = json.loads(response.text)
+    return crimeDict
+
+
+#trim address by removing extra stuff
+def getModifiedAddress(address):
+    address = address.split(' ')
+
+
+    count = 0
+    for x in address:
+        if count == 0:
+            number = x
+            count += 1
+        elif count == 1:
+            orientation = x
+            count += 1
+        elif count == 2:
+            name = x
+            count += 1
+        elif 'chicago,' in x.lower():
+            city = x
+            count += 1
+        elif count == 4:
+            state = x
+            count += 1
+        elif count == 5:
+            zip_code = x
+            count += 1
+    # add this if you want to include zipcode but make sure to not have zipcode for census block
+    # + ' ' + zip_code
+    trimAddress = number + ' ' + orientation + ' ' + name + ' ' + city + ' ' + state
+    return trimAddress
+
+
+#trim address by removing extra stuff
+def getTrimmedAddress(address):
+    address = address.split(' ')
+
+
+    count = 0
+    for x in address:
+        if count == 0:
+            number = x
+            count += 1
+        elif count == 1:
+            orientation = x
+            count += 1
+        elif count == 2:
+            name = x
+            count += 1
+
+    trimedAddress = number + ' ' + orientation + ' ' + name
+    return trimedAddress
+
+
+def getBusinessLicenseHistory(name, address):
+    print('getting business license history')
+
+    address,city,state,zipcode = address.split(',')
+    address = getTrimmedAddress(address)
+    address = address.upper()
+    name = name.upper().replace('\'', '_')        #.split(' ')[0]
+#https://data.cityofchicago.org/resource/xqx5-8hwx.json?$select=legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity&$order=license_start_date%20DESC
+    baseUrl = 'https://data.cityofchicago.org/resource/xqx5-8hwx.json'
+    select = '$select=legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity'
+    #&$where='300%20W%20Randolph'%20like%20address
+    where = '$where=address like ' + "'%" + address + "%'" + ' AND (legal_name like ' + "'%" + name + "%' " +'OR doing_business_as_name like ' + "'%" + name + "%'" + ')'
+    orderby = '$order=license_start_date DESC'
+    url = baseUrl + '?' + select + '&' + where + '&' + orderby
+
+    response = requests.get(url)
+#select legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity where \'300 W Randolph St\' like address AND (legal_name like \'Harry\'s Ho
+    licenseDict = json.loads(response.text)
+    return licenseDict
+
+
+def getFoodInspectionHistory(name, address):
+    print('getting food inspection history')
+    address,city,state,zipcode = address.split(',')
+    address = getTrimmedAddress(address)
+    address = address.upper()
+    name = name.upper().replace('\'', '_')
+
+    baseUrl = 'https://data.cityofchicago.org/resource/cwig-ma7x.json'
+    select = '$select=aka_name,dba_name,facility_type,risk,inspection_date,inspection_type,results,violations'
+    where = '$where=address like ' + "'%" + address + "%'" + ' AND (aka_name like ' + "'%" + name + "%' " +'OR dba_name like ' + "'%" + name + "%'" + ')'
+    orderby = '$order=inspection_date DESC'
+    url = baseUrl + '?' + select + '&' + where + '&' + orderby
+
+    response = requests.get(url)
+
+    foodInspectionDict = json.loads(response.text)
+    return foodInspectionDict
+
+
+def getWeatherHistory():
+    print('getting weather history')
+
+    header = {'token': '<your token>'}
+
+    #https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TAVG&TMAX&TMIN&PRCP&SNOW&SNWD&AWND&stationid=GHCND:USW00094846&startdate=2014-01-01&enddate=2018-04-07&limit=1000&offset=0
+    baseurl = 'https://www.ncdc.noaa.gov/cdo-web/api/v2/'
+    endpoint = 'data?'
+    datasetID = 'datasetid=GHCND'
+    datatypeid = 'datatypeid=TAVG'     #&datatypeid=TMAX&datatypeid=TMIN&datatypeid=PRCP&datatypeid=SNOW&datatypeid=SNWD&datatypeid=AWND'
+    stationid = 'stationid=GHCND:USW00094846'
+    startDate = 'startdate=2017-04-10'
+    endDate = 'enddate=2018-04-07'
+    limit= 'limit=1000'
+    offset = 'offset=0'
+    attributes = 'includemetadata=false'
+
+    #url = baseurl + endpoint + datasetID + '&' + datatypeid + '&' + stationid + '&' + startDate + '&' + endDate + '&' + limit + '&' + offset
+    url = baseurl + endpoint + datasetID + '&' + datatypeid + '&' + stationid + '&' + startDate + '&' + endDate + '&' + attributes + '&'+ limit
+    response = requests.get(url, headers=header)
+
+    weatherHistoryDict = json.loads(response.text)
+
+    return weatherHistoryDict
+
+
+def getCensusBlock(address):
+    print('getting census block')
+    address = getModifiedAddress(address)
+
+    #https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=1505+S+Michigan+Chicago%2C+IL+60605&benchmark=Public_AR_Census2010&vintage=Census2010_Census2010
+    baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+    returnType = 'geographies/'
+    searchType = 'onelineaddress?'
+    benchmark = 'benchmark=Public_AR_Census2010'
+    vintage = 'vintage=Census2010_Census2010'
+    addressSearch = 'address=' + address.replace(' ', '+')
+    formatType = 'format=json'
+
+    url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+    response = requests.get(url)
+    censusBlockDict = json.loads(response.text)
+    return censusBlockDict
+
+
+def getCensusDataByBlock():
+    print('getting census data by block')
+    return []
+
+
+def templateFunction():
+    #file to retrieve restaurant data from yelp csv file
+    restaurantYelp = csv.reader(open('restaurants_60601-60606.csv', 'r'))
+
+
+    #get weather data
+    weatherHistory = getWeatherHistory()
+
+    yelpRestaurantDictionary = {}
+    header = {}
+    index = 0
+
+    #this loop turns csv data to a dictionary
+    for line in restaurantYelp:
+        if header == {}:
+            header = line
+        else:
+            yelpRestaurantDictionary[index] = dict(zip(header, line))
+            index += 1
+
+    refinedData = []
+
+    #following loop gets any data needed for each restaurant
+    for restaurantInfo in yelpRestaurantDictionary.values():
+
+        #get data from databases we might need
+        if 'education' in restaurantInfo['categories'].lower() or 'restaurant' in restaurantInfo['categories'].lower() or 'grocery' in restaurantInfo['categories'].lower():
+
+            #pull addrerss from yelp info
+            address = restaurantInfo['address']
+
+            #get census block info
+            censusBlock = getCensusBlock(address)
+
+            #this will be needed for business license and food inspection
+            address = censusBlock['result']['addressMatches'][0]['matchedAddress']
+            name = restaurantInfo['name']                   #.replace('\'', '\'')
+            print(len(name))
+
+            #this is needed for crime
+            lat = str(censusBlock['result']['addressMatches'][0]['coordinates']['y'])
+            long = str(censusBlock['result']['addressMatches'][0]['coordinates']['x'])
+
+            #this will be needed for census data
+            #censusStateNo = censusBlock['result']['addressMatches'][0]['geographies'][][][]
+            censusTractNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME']
+            censusBlockNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Blocks'][0]['BASENAME']
+
+            #get crime history from 1.5 mile radius and after 2014
+            crimeHistory = getCrimeHistory(lat, long)
+
+            #get all business licences related to the address and name
+            businessLicenseHistory = getBusinessLicenseHistory(name, address)
+
+            #geet all food inspections related to the address and name
+            foodInspectionHistory = getFoodInspectionHistory(name, address)
+
+            #get census block data
+            #censusDataByBlock = getCensusDataByBlock(censusTractNo, censusBlockNo)
+
+            #merge data here for your purpose
+
+            #add to other list if you need for observation for prediction
+            #refinedData.add(your variable for refined data)
+
+    print('done')
+
+
+if __name__ == '__main__':
+
+    crimeReport = 'crime_report'
+    predictCrimeProbability = 'predict_crime_probability'
+    graphCrimeAgeBlock = 'graph_crime_age_block'
+    reviewInspection = 'review_inspection'
+    sentimentReviewAnalysis = 'sentiment_review_analysis'
+    restaurantSentimentAndReview = 'restaurant_sentiment_and_review'
+    predictReview = 'predict_review'
+    businessViability = 'business_viability'
+    liquorAndCrime = 'liquor_and_crime'
+    weatherAndCrime = 'weather_and_crime'
+
+    #runtime arguments
+    args = sys.argv
+
+    #holds list of arguments
+    commands = []
+
+    #holds an argument with variables
+    subCommand = []
+
+    #get length of total arguments and variables
+    argsLength = len(sys.argv)
+    count = 0
+
+    #seperate arguments
+    for x in args:
+        if '-' in x and subCommand == []:
+            subCommand.append(x)
+        elif '-' in x and subCommand != []:
+            commands.append(subCommand)
+            subCommand = []
+            subCommand.append(x)
+        else:
+            subCommand.append(x)
+
+        count += 1
+        if count == argsLength:
+            commands.append(subCommand)
+
+    #call proper functions based of argument and variables
+    for x in commands:
+        argument = x.pop(0)
+        variables = x
+        if crimeReport in argument:
+            print('task 1')
+            templateFunction()
+        elif predictCrimeProbability in argument:
+            print('task 2')
+        elif graphCrimeAgeBlock in argument:
+            print('task 3')
+        elif reviewInspection in argument:
+            print('task 4')
+        elif sentimentReviewAnalysis in argument:
+            print('task 5')
+        elif restaurantSentimentAndReview in argument:
+            print('task 6')
+        elif predictReview in argument:
+            print('task 7')
+        elif businessViability in argument:
+            print('task 8')
+        elif liquorAndCrime in argument:
+            print('task 9')
+        elif weatherAndCrime in argument:
+            print('task 10')
+
+    print(commands)
