@@ -1,0 +1,73 @@
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer as vt
+restaurant=pd.read_csv('restaurants_60601-60606.csv')
+reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
+restaurant['label'] = np.where(restaurant['rating']>=4,1,0)
+restaurant['label'].value_counts()
+positive=restaurant[restaurant['label']==1]
+positive['rating'].value_counts().plot(kind="bar")
+plt.xlabel("rating")
+plt.ylabel('number of restaurants')
+plt.show()
+reviews['label']=np.where(reviews['rating']>=4,1,0)
+data0=reviews[['reviewContent','label']]
+data0['words']=data0.reviewContent.str.strip().str.lower().str.split('[\W_]+')
+data0
+rows = list()
+for row in data0[['label', 'words']].iterrows():
+    r = row[1]
+    for word in r.words:
+        rows.append((r.label, word))
+
+words = pd.DataFrame(rows, columns=['label', 'word'])
+words.head()
+words['label'].value_counts()
+words = words[words.word.str.len() > 0]
+words.head()
+counts = words.groupby('label')\
+    .word.value_counts()\
+    .to_frame()\
+    .rename(columns={'word':'n_w'})
+counts.head()
+counts
+def pretty_plot_top_n(series, top_n=5, index_level=0):
+    r = series\
+    .groupby(level=index_level)\
+    .nlargest(top_n)\
+    .reset_index(level=index_level, drop=True)
+    r.plot.bar()
+    return r.to_frame()
+
+
+pretty_plot_top_n(counts['n_w'])
+word_sum = counts.groupby(level=0)\
+    .sum()\
+    .rename(columns={'n_w': 'n_d'})
+word_sum
+tf = counts.join(word_sum)
+
+tf['tf'] = tf.n_w/tf.n_d
+
+tf.head()
+pretty_plot_top_n(tf['tf'])
+c_d = words.label.nunique()
+c_d
+idf = words.groupby('word')\
+    .label\
+    .nunique()\
+    .to_frame()\
+    .rename(columns={'label':'i_d'})\
+    .sort_values('i_d')
+idf.head()
+idf['idf'] = np.log(c_d/idf.i_d.values)
+
+idf.head()
+tf_idf = tf.join(idf)
+
+tf_idf.head()
+tf_idf['tf_idf'] = tf_idf.tf * tf_idf.idf
+tf_idf.head()
+pretty_plot_top_n(tf_idf['tf_idf'])
+tf_idf
