@@ -1,0 +1,45 @@
+# run this file on python notebook 
+
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer 
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.utils.random import sample_without_replacement
+from sklearn.utils import resample
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+restaurant=pd.read_csv('restaurants_60601-60606.csv')
+reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
+restaurant['label'] = np.where(restaurant['rating']>=4,1,0)
+restaurant['label'].value_counts()
+positive=restaurant[restaurant['label']==1]
+positive['rating'].value_counts().plot(kind="bar")
+plt.xlabel("rating")
+plt.ylabel('number of restaurants')
+plt.show()
+reviews['label']=np.where(reviews['rating']>=4,1,0)
+data0=reviews[['reviewContent','label']]
+data0
+p,n=data0['label'].value_counts()
+p_reduce=resample(data0[data0['label']==1], n_samples=n, random_state=0)
+p_reduce
+frames = [p_reduce,data0[data0['label']==0]]
+data1=pd.concat(frames)
+data1
+X_train, X_test, y_train, y_test = train_test_split(data1['reviewContent'],data1['label'], test_size=0.33, random_state=42)
+vectorizer = TfidfVectorizer(min_df=0.05,stop_words='english')
+X_train
+vectorizer.fit(X_train)
+print(vectorizer.vocabulary_)
+x= vectorizer.transform(X_train)
+clf = RandomForestClassifier( n_estimators=100,random_state=0)
+clf.fit(x,y_train)
+x_test=vectorizer.transform(X_test)
+y_predict=clf.predict(x_test)
+f1_score(y_test,y_predict)
+precision_score(y_test,y_predict)
+recall_score(y_test, y_predict)
