@@ -1,0 +1,35 @@
+import pandas as pd 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer 
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.utils.random import sample_without_replacement
+from sklearn.utils import resample
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+restaurant=pd.read_csv('restaurants_60601-60606.csv')
+reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
+data0=reviews[['reviewContent','rating']]
+data0['rating'].value_counts()
+data1=resample(data0[data0['rating']==1], n_samples=1550, random_state=0)
+data2=resample(data0[data0['rating']==2], n_samples=1550, random_state=0)
+data3=resample(data0[data0['rating']==3], n_samples=1550, random_state=0)
+data4=resample(data0[data0['rating']==4], n_samples=1550, random_state=0)
+data5=resample(data0[data0['rating']==5], n_samples=1550, random_state=0)
+frames = [data1,data2,data3,data4,data5]
+data0=pd.concat(frames)
+X_train, X_test, y_train, y_test = train_test_split(data0['reviewContent'],data0['rating'], test_size=0.33, random_state=42)
+vectorizer = TfidfVectorizer(stop_words='english')
+vectorizer.fit(X_train)
+print(vectorizer.vocabulary_)
+x= vectorizer.transform(X_train)
+clf = RandomForestClassifier(n_estimators=101)
+clf.fit(x,y_train)
+x_test=vectorizer.transform(X_test)
+y_predict=clf.predict(x_test)
+f1_score(y_test,y_predict,average='weighted')
+precision_score(y_test, y_predict, average='weighted')
+recall_score(y_test, y_predict, average='weighted')
