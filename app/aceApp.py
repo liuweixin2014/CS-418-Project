@@ -2,12 +2,13 @@ import sys
 import csv
 import requests
 import json
+import re
+import time as sleep
 
 #websites
 #
 #https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.pdf
 #https://www.census.gov/data/developers/data-sets.html
-#token is needed for centennial census data
 #
 #https://dev.socrata.com/docs/endpoints.html
 #https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2
@@ -35,6 +36,16 @@ def getCrimeHistory(lat, long):
 
     response = requests.get(url)
 
+    if response.status_code != 200:
+        print(url, '\nthis url encountered url encoding problem')
+    '''elif 'need to figure out what to put here to trigger this' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        crimeDict = getCrimeHistory(lat,long)
+    else:
+        #if everything is perfect then continue
+        crimeDict = json.loads(response.text)'''
+
     crimeDict = json.loads(response.text)
     return crimeDict
 
@@ -43,18 +54,31 @@ def getCrimeHistory(lat, long):
 def getModifiedAddress(address):
     address = address.split(' ')
 
-
     count = 0
     for x in address:
+        x = x.replace('.', '')
         if count == 0:
-            number = x
-            count += 1
+            result = re.match(r'^[\d]+$', x)
+            if result is None:
+                result = ''
+            else:
+                result = result.string
+            if x in result:
+                number = x
+                count += 1
         elif count == 1:
-            orientation = x
-            count += 1
+            if x.lower() == 'n' or x.lower() == 's' or x.lower() == 'e' or x.lower() == 'w':
+                orientation = x
+                count += 1
         elif count == 2:
             name = x
             count += 1
+        elif 'lake' == name.lower() and 'shore' in x.lower() and count == 3:
+            name = name + ' ' + x
+        elif 'la' == name.lower() and 'salle' in x.lower() and count == 3:
+            name = name + ' ' + x
+        elif 'wacker' == name.lower() and 'dr' in x.lower() and count == 3:
+            name = name + ' ' + x
         elif 'chicago,' in x.lower():
             city = x
             count += 1
@@ -93,40 +117,67 @@ def getTrimmedAddress(address):
 
 def getBusinessLicenseHistory(name, address):
     print('getting business license history')
-
+    oldAddress = address
     address,city,state,zipcode = address.split(',')
     address = getTrimmedAddress(address)
     address = address.upper()
-    name = name.upper().replace('\'', '_')        #.split(' ')[0]
-#https://data.cityofchicago.org/resource/xqx5-8hwx.json?$select=legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity&$order=license_start_date%20DESC
+    #remove characters that will encounter problems in the requests parser and replace with wildcard character
+    name = name.upper().replace('\'', '_').replace('&', '_')
+
     baseUrl = 'https://data.cityofchicago.org/resource/xqx5-8hwx.json'
     select = '$select=legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity'
-    #&$where='300%20W%20Randolph'%20like%20address
-    where = '$where=address like ' + "'%" + address + "%'" + ' AND (legal_name like ' + "'%" + name + "%' " +'OR doing_business_as_name like ' + "'%" + name + "%'" + ')'
+    where = '$where=address like ' + "'%25" + address + "%25'" + ' AND (legal_name like ' + "'%25" + name + "%25' " +'OR doing_business_as_name like ' + "'%25" + name + "%25'" + ')'
     orderby = '$order=license_start_date DESC'
     url = baseUrl + '?' + select + '&' + where + '&' + orderby
 
-    response = requests.get(url)
-#select legal_name,doing_business_as_name,license_code,license_description,business_activity_id,business_activity where \'300 W Randolph St\' like address AND (legal_name like \'Harry\'s Ho
+    myurl = url.encode('utf-8')
+    response = requests.get(myurl)
+
+    if response.status_code != 200:
+        print(url, '\nthis url encountered url encoding problem')
+    '''elif 'need to figure out what to put here to trigger this' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        licenseDict = getBusinessLicenseHistory(name, oldAddress)
+    else:
+        #if everything is perfect then continue
+        licenseDict = json.loads(response.text)'''
+
+    #turn data to dict representation
     licenseDict = json.loads(response.text)
+
     return licenseDict
 
 
 def getFoodInspectionHistory(name, address):
     print('getting food inspection history')
+    oldAddress = address
     address,city,state,zipcode = address.split(',')
     address = getTrimmedAddress(address)
     address = address.upper()
-    name = name.upper().replace('\'', '_')
+    #remove characters that will encounter problems in the requests parser and replace with wildcard character
+    name = name.upper().replace('\'', '_').replace('&', '_')
 
     baseUrl = 'https://data.cityofchicago.org/resource/cwig-ma7x.json'
     select = '$select=aka_name,dba_name,facility_type,risk,inspection_date,inspection_type,results,violations'
-    where = '$where=address like ' + "'%" + address + "%'" + ' AND (aka_name like ' + "'%" + name + "%' " +'OR dba_name like ' + "'%" + name + "%'" + ')'
+    where = '$where=address like ' + "'%25" + address + "%25'" + ' AND (aka_name like ' + "'%25" + name + "%25' " +'OR dba_name like ' + "'%25" + name + "%25'" + ')'
     orderby = '$order=inspection_date DESC'
     url = baseUrl + '?' + select + '&' + where + '&' + orderby
 
-    response = requests.get(url)
+    myurl = url.encode('utf-8')
+    response = requests.get(myurl)
 
+    if response.status_code != 200:
+        print(url, '\nthis url encountered url encoding problem')
+    '''elif 'need to figure out what to put here to trigger this' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        foodInspectionDict = getFoodInspectionHistory(name, oldAddress)
+    else:
+        #if everything is perfect then continue
+        foodInspectionDict = json.loads(response.text)'''
+
+    #turn data to dict representation
     foodInspectionDict = json.loads(response.text)
     return foodInspectionDict
 
@@ -134,7 +185,7 @@ def getFoodInspectionHistory(name, address):
 def getWeatherHistory():
     print('getting weather history')
 
-    header = {'token': '<your token>'}
+    header = {'token': 'dYucmeoWuLMPXUulkTyIvsHqqUvfrLTf'}
 
     #https://www.ncdc.noaa.gov/cdo-web/api/v2/data?datasetid=GHCND&datatypeid=TAVG&TMAX&TMIN&PRCP&SNOW&SNWD&AWND&stationid=GHCND:USW00094846&startdate=2014-01-01&enddate=2018-04-07&limit=1000&offset=0
     baseurl = 'https://www.ncdc.noaa.gov/cdo-web/api/v2/'
@@ -152,6 +203,16 @@ def getWeatherHistory():
     url = baseurl + endpoint + datasetID + '&' + datatypeid + '&' + stationid + '&' + startDate + '&' + endDate + '&' + attributes + '&'+ limit
     response = requests.get(url, headers=header)
 
+    if response.status_code != 200:
+        print(url, '\nthis url encountered url encoding problem')
+    '''elif 'need to figure out what to put here to trigger this' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        weatherHistoryDict = getWeatherHistory()
+    else:
+        #if everything is perfect then continue
+        weatherHistoryDict = json.loads(response.text)'''
+
     weatherHistoryDict = json.loads(response.text)
 
     return weatherHistoryDict
@@ -159,7 +220,6 @@ def getWeatherHistory():
 
 def getCensusBlock(address):
     print('getting census block')
-    address = getModifiedAddress(address)
 
     #https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=1505+S+Michigan+Chicago%2C+IL+60605&benchmark=Public_AR_Census2010&vintage=Census2010_Census2010
     baseURL = 'https://geocoding.geo.census.gov/geocoder/'
@@ -172,7 +232,16 @@ def getCensusBlock(address):
 
     url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
     response = requests.get(url)
-    censusBlockDict = json.loads(response.text)
+    if response.status_code != 200:
+        print('encountered an input error')
+    elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        censusBlockDict = getCensusBlock(address)
+    else:
+        #if everything is perfect then continue
+        censusBlockDict = json.loads(response.text)
+
     return censusBlockDict
 
 
@@ -187,11 +256,13 @@ def templateFunction():
 
 
     #get weather data
-    weatherHistory = getWeatherHistory()
+    #TODO
+    #weatherHistory = getWeatherHistory()
 
     yelpRestaurantDictionary = {}
     header = {}
     index = 0
+    businessCount = 1
 
     #this loop turns csv data to a dictionary
     for line in restaurantYelp:
@@ -207,27 +278,35 @@ def templateFunction():
     for restaurantInfo in yelpRestaurantDictionary.values():
 
         #get data from databases we might need
-        if 'education' in restaurantInfo['categories'].lower() or 'restaurant' in restaurantInfo['categories'].lower() or 'grocery' in restaurantInfo['categories'].lower():
-
+        if 'education' in restaurantInfo['categories'].lower() or 'restaurant' in restaurantInfo['categories'].lower() or 'grocery' in restaurantInfo['categories'].lower() or '':
+            
+            print('Count:', businessCount, ' id:', restaurantInfo['restaurantID'])
             #pull addrerss from yelp info
             address = restaurantInfo['address']
 
             #get census block info
-            censusBlock = getCensusBlock(address)
+            censusBlock = getCensusBlock(getModifiedAddress(address))
 
-            #this will be needed for business license and food inspection
-            address = censusBlock['result']['addressMatches'][0]['matchedAddress']
-            name = restaurantInfo['name']                   #.replace('\'', '\'')
-            print(len(name))
+            #check if data is retrieved
+            if len(censusBlock['result']['addressMatches']) > 0:
+                #this will be needed for food inspections and business license
+                address = censusBlock['result']['addressMatches'][0]['matchedAddress']
 
-            #this is needed for crime
-            lat = str(censusBlock['result']['addressMatches'][0]['coordinates']['y'])
-            long = str(censusBlock['result']['addressMatches'][0]['coordinates']['x'])
+                #this is needed for crime
+                lat = str(censusBlock['result']['addressMatches'][0]['coordinates']['y'])
+                long = str(censusBlock['result']['addressMatches'][0]['coordinates']['x'])
 
-            #this will be needed for census data
-            #censusStateNo = censusBlock['result']['addressMatches'][0]['geographies'][][][]
-            censusTractNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME']
-            censusBlockNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Blocks'][0]['BASENAME']
+                #this will be needed for census data
+                #censusStateNo = censusBlock['result']['addressMatches'][0]['geographies'][][][]
+                censusTractNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME']
+                censusBlockNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Blocks'][0]['BASENAME']
+            else:
+                #should not reach here but if you do handle variables in above 'if' portion
+                address = address.upper()
+                print('need to see census response')
+
+            #this will be needed for food inspections and business license
+            name = restaurantInfo['name']
 
             #get crime history from 1.5 mile radius and after 2014
             crimeHistory = getCrimeHistory(lat, long)
@@ -245,6 +324,8 @@ def templateFunction():
 
             #add to other list if you need for observation for prediction
             #refinedData.add(your variable for refined data)
+            #sleep.sleep(5)
+            businessCount += 1
 
     print('done')
 
