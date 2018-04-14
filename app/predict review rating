@@ -1,4 +1,4 @@
-#run this file separately 
+#run this file separately and in the ipython notebook 
 
 import pandas as pd 
 import numpy as np
@@ -31,11 +31,15 @@ x= vectorizer.transform(X_train)
 clf = RandomForestClassifier(n_estimators=101)
 clf.fit(x,y_train)
 x_test=vectorizer.transform(X_test)
-print("the predict result")
+print("the predict result is")
 y_predict=clf.predict(x_test)
-print("the fi_socre is ")
-f1_score(y_test,y_predict,average='weighted')
+print(y_predict)
+print("the f1_socre is ")
+f1_score=f1_score(y_test,y_predict,average='weighted')
+print(f1_score)
 print("the precision is")
-precision_score(y_test, y_predict, average='weighted')
+precision_score=precision_score(y_test, y_predict, average='weighted')
+print(precision_score)
 print("the recall is")
-recall_score(y_test, y_predict, average='weighted')
+recall_score=recall_score(y_test, y_predict, average='weighted')
+print(recall_score)
