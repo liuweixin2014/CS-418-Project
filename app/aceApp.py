@@ -55,6 +55,13 @@ def getModifiedAddress(address):
     address = address.split(' ')
 
     count = 0
+    
+    number = ''
+    orientation = ''
+    name = ''
+    city = ''
+    state = ''
+    
     for x in address:
         x = x.replace('.', '')
         if count == 0:
@@ -88,8 +95,6 @@ def getModifiedAddress(address):
         elif count == 5:
             zip_code = x
             count += 1
-    # add this if you want to include zipcode but make sure to not have zipcode for census block
-    # + ' ' + zip_code
     trimAddress = number + ' ' + orientation + ' ' + name + ' ' + city + ' ' + state
     return trimAddress
 
@@ -241,13 +246,56 @@ def getCensusBlock(address):
     else:
         #if everything is perfect then continue
         censusBlockDict = json.loads(response.text)
-
+    
+    #using 2010 database but switch to current one to get coordinates and other info since old data doesnt have this address
+    if len(censusBlockDict['result']['addressMatches']) == 0:
+        censusBlockDict = helperToGetCensusBlock(address)
+        
     return censusBlockDict
+
+
+def helperToGetCensusBlock(address):
+    print('census block call with different database')
+
+    baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+    returnType = 'geographies/'
+    searchType = 'onelineaddress?'
+    benchmark = 'benchmark=Public_AR_Current'
+    vintage = 'vintage=Current_Current'
+    addressSearch = 'address=' + address.replace(' ', '+')
+    formatType = 'format=json'
+
+    url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+    response = requests.get(url)
+    if response.status_code != 200:
+        print('encountered an input error')
+        if response.status_code == 500:
+            censusBlockHelperDict = helperToGetCensusBlock(address)
+    elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+        #if 200 status but content is corrupt or incomplete repeat
+        sleep.sleep(3)
+        censusBlockHelperDict = helperToGetCensusBlock(address)
+    else:
+        #if everything is perfect then continue
+        censusBlockHelperDict = json.loads(response.text)
+
+    return censusBlockHelperDict
 
 
 def getCensusDataByBlock():
     print('getting census data by block')
     return []
+
+
+def getBlockIndex(list):
+
+    theRealKey = ''
+    for key in list:
+        if '2010 Census Blocks' == key:
+            theRealKey = key
+        elif 'Census Blocks' == key:
+            theRealKey = key
+    return theRealKey
 
 
 def templateFunction():
@@ -299,33 +347,35 @@ def templateFunction():
                 #this will be needed for census data
                 #censusStateNo = censusBlock['result']['addressMatches'][0]['geographies'][][][]
                 censusTractNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Tracts'][0]['BASENAME']
-                censusBlockNo = censusBlock['result']['addressMatches'][0]['geographies']['Census Blocks'][0]['BASENAME']
+                #determie what data we are using and use proper key for census block
+                blockIndex = getBlockIndex(censusBlock['result']['addressMatches'][0]['geographies'].keys())
+                censusBlockNo = censusBlock['result']['addressMatches'][0]['geographies'][blockIndex][0]['BASENAME']
+
+                #this will be needed for food inspections and business license
+                name = restaurantInfo['name']
+
+                #get crime history from 1.5 mile radius and after 2014
+                crimeHistory = getCrimeHistory(lat, long)
+
+                #get all business licences related to the address and name
+                businessLicenseHistory = getBusinessLicenseHistory(name, address)
+
+                #geet all food inspections related to the address and name
+                foodInspectionHistory = getFoodInspectionHistory(name, address)
+
+                #get census block data
+                #censusDataByBlock = getCensusDataByBlock(censusTractNo, censusBlockNo)
+
+                #merge data here for your purpose
+
+                #add to other list if you need for observation for prediction
+                #refinedData.add(your variable for refined data)
+                #sleep.sleep(5)
+                businessCount += 1
             else:
                 #should not reach here but if you do handle variables in above 'if' portion
                 address = address.upper()
                 print('need to see census response')
-
-            #this will be needed for food inspections and business license
-            name = restaurantInfo['name']
-
-            #get crime history from 1.5 mile radius and after 2014
-            crimeHistory = getCrimeHistory(lat, long)
-
-            #get all business licences related to the address and name
-            businessLicenseHistory = getBusinessLicenseHistory(name, address)
-
-            #geet all food inspections related to the address and name
-            foodInspectionHistory = getFoodInspectionHistory(name, address)
-
-            #get census block data
-            #censusDataByBlock = getCensusDataByBlock(censusTractNo, censusBlockNo)
-
-            #merge data here for your purpose
-
-            #add to other list if you need for observation for prediction
-            #refinedData.add(your variable for refined data)
-            #sleep.sleep(5)
-            businessCount += 1
 
     print('done')
 
