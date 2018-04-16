@@ -4,6 +4,7 @@ import requests
 import json
 import re
 import time as sleep
+from TaskOneTwoAndTen import TaskOne
 
 #websites
 #
@@ -427,7 +428,9 @@ if __name__ == '__main__':
         variables = x
         if crimeReport in argument:
             print('task 1')
-            templateFunction()
+            taskOne = TaskOne('restaurants_60601-60606.csv')
+            taskOne.buildTable()
+            print('done')
         elif predictCrimeProbability in argument:
             print('task 2')
         elif graphCrimeAgeBlock in argument:
