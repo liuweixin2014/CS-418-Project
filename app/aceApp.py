@@ -5,6 +5,8 @@ import json
 import re
 import time as sleep
 from TaskOneTwoAndTen import TaskOne
+from TaskOneTwoAndTen import TaskTwo
+from TaskOneTwoAndTen import TaskTen
 
 #websites
 #
