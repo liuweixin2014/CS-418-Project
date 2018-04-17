@@ -30,10 +30,14 @@ on terminal run following command and check Commands and Mandatory Optios for fu
 
 Commands: 
   -crime_report
+    This command requires restaurants_60601-60606.csv file
+    This will take 30 minutes to 2 hours depending on geocoding.geo.census.gov
     This command will print out a table to a file named CrimeBusinessYelpData.csv
+    This command is Task One
     
   -predict_crime_probability <AddressString> ... <DataPointValue> 
     This command will print out a table to a file named PredictionResults.csv
+    This command is Task Two
   
   -graph_crime_age_block
   
@@ -50,7 +54,9 @@ Commands:
   -liquor_and_crime
      
   -weather_and_crime <AddressString> ... <DataPointValue>
+    You will need to request a key from https://www.ncdc.noaa.gov/cdo-web/webservices/v2 and place it line 203 within the getWeatherHistory() in file TaskOneTwoAndTen.py
     This command will print out a table to a file named weatherPredictionResults.csv
+    This command is Task Ten
 
 
 
