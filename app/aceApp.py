@@ -433,6 +433,10 @@ if __name__ == '__main__':
             print('done')
         elif predictCrimeProbability in argument:
             print('task 2')
+            taskTwo = TaskTwo(variables)
+            taskTwo.buildCrimeTable()
+            taskTwo.fitAndPredict()
+            print('done')
         elif graphCrimeAgeBlock in argument:
             print('task 3')
         elif reviewInspection in argument:
@@ -586,5 +590,8 @@ if __name__ == '__main__':
             print('task 9')
         elif weatherAndCrime in argument:
             print('task 10')
+            taskTen = TaskTen(variables)
+            taskTen.buildCrimeAndWeatherTable()
+            taskTen.fitAndPredict()
 
     print(commands)
