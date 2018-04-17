@@ -5,6 +5,15 @@ Before running the application make sure you have the following
   librarires/modules needed:
     sys, csv, requests, json, re, time, sklearn, pandas, numpy, matplotlib
       *** Sometimes you might need to reinstall some libraries if you get 'comb' import typeerror ***
+ 
+ 
+For the task 5 to task 7, the sentiment analysis part , need to prepare the original data set. restaurants_60601-60606.csv and reviews_60601-60606.csv
+ 
+The file tf-idf and predict sentiment label and predict review rating files need to be run in ipython notebook 
+the result will be the F-score and precison and some figiures 
+ 
+ 
+ 
 
 Running the application
 
