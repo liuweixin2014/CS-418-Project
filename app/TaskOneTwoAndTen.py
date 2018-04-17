@@ -3,6 +3,591 @@ import requests
 import json
 import re
 import time as sleep
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+
+
+class TaskTen:
+
+    crimeData = None
+    crimeClassifier = None
+    addressToPredict = None
+    addressCoordinates = None
+    monthlyAvg = None
+
+    #cunstructor
+    def __init__(self,variables):
+        addressArray, dataPoints = self.splitAddressArrayFromDataPoints(variables)
+        self.addressToPredict = self.createAddressOneLine(addressArray)
+        self.crimeData = self.getCrimeHistory(dataPoints)
+
+    def getCoordinateList(self):
+
+        coordinatesArray = []
+
+        for address in self.addressToPredict:
+            tempDict = self.getCensusBlock(address)
+
+            if len(tempDict['result']['addressMatches']) > 0:
+                latitude = tempDict['result']['addressMatches'][0]['coordinates']['y']
+                longitude = tempDict['result']['addressMatches'][0]['coordinates']['x']
+                blockIndex = self.getBlockIndex(tempDict['result']['addressMatches'][0]['geographies'].keys())
+                block = tempDict['result']['addressMatches'][0]['geographies'][blockIndex][0]['BASENAME']
+
+                tempArrayMay = [float(longitude), float(latitude), 5, address, block]
+                tempArrayJune = [float(longitude), float(latitude), 6, address, block]
+                tempArrayJuly = [float(longitude), float(latitude), 7, address, block]
+                tempArrayAugust = [float(longitude), float(latitude), 8, address, block]
+
+                coordinatesArray.append(tempArrayMay)
+                coordinatesArray.append(tempArrayJune)
+                coordinatesArray.append(tempArrayJuly)
+                coordinatesArray.append(tempArrayAugust)
+        return coordinatesArray
+
+    def splitAddressArrayFromDataPoints(self, variables):
+        addressUnparsed = None
+        datapointUnparsed = None
+        count = 0
+        index = 0
+        for var in variables:
+            if 'datapoints:' in var:
+                index = count
+            count += 1
+        datapoint = self.getValofData(variables.pop(index))
+        addressUnparsed = variables
+        return addressUnparsed, datapoint
+
+    def getValofData(self, datapointUnparsed):
+        name, value = datapointUnparsed.split(':')
+
+        return value
+
+    def createAddressOneLine(self, addressArray):
+        addresses = []
+        for address in addressArray:
+            number, orientation, street, streetType, city, state, zip_code = address.split(' ')
+            #check its only a number
+            number = number.split(':')[1]
+
+            #remove . or turn to abbreviation only
+            orientation = orientation.split(':')[1]
+            orientation = orientation.replace('.', '')
+            orientation = self.abbreviatedOrientation(orientation)
+
+            street = street.split(':')[1]
+
+            #remove any .
+            streetType = streetType.split(':')[1]
+            streetType = streetType.replace('.', '')
+
+            city = city.split(':')[1]
+
+            #remove any periods
+            state = state.split(':')[1]
+            state = state.replace('.', '')
+
+            zip_code = zip_code.split(':')[1]
+            newAddress = number + ' ' + orientation + ' ' + street + ' ' + streetType + ', ' + city + ', ' + state + ', ' + zip_code
+            addresses.append(newAddress)
+
+        return addresses
+
+    def abbreviatedOrientation(self, orientation):
+
+        if 'east' == orientation.lower():
+            return 'e'
+        elif 'west' == orientation.lower():
+            return 'w'
+        elif 'north' == orientation.lower():
+            return 'n'
+        elif 'south' == orientation.lower():
+            return 's'
+        return orientation
+
+    def getBlockIndex(self, list):
+
+        theRealKey = ''
+        for key in list:
+            if '2010 Census Blocks' == key:
+                theRealKey = key
+            elif 'Census Blocks' == key:
+                theRealKey = key
+        return theRealKey
+
+    def getCensusBlock(self, address):
+        print('getting census block')
+
+        baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+        returnType = 'geographies/'
+        searchType = 'onelineaddress?'
+        benchmark = 'benchmark=Public_AR_Census2010'
+        vintage = 'vintage=Census2010_Census2010'
+        addressSearch = 'address=' + address.replace(' ', '+')
+        formatType = 'format=json'
+
+        url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+        response = requests.get(url)
+        if response.status_code != 200:
+            print('encountered an input error')
+            censusBlockDict = self.getCensusBlock(address)
+        elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+            #if 200 status but content is corrupt or incomplete repeat
+            sleep.sleep(6)
+            censusBlockDict = self.getCensusBlock(address)
+        else:
+            #if everything is perfect then continue
+            censusBlockDict = json.loads(response.text)
+
+        #using 2010 database but switch to current one to get coordinates and other info since old data doesnt have this address
+        if len(censusBlockDict['result']['addressMatches']) == 0:
+            censusBlockDict = self.helperToGetCensusBlock(address)
+
+
+        return censusBlockDict
+
+    def helperToGetCensusBlock(self, address):
+        print('census block call with different database')
+
+        baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+        returnType = 'geographies/'
+        searchType = 'onelineaddress?'
+        benchmark = 'benchmark=Public_AR_Current'
+        vintage = 'vintage=Current_Current'
+        addressSearch = 'address=' + address.replace(' ', '+')
+        formatType = 'format=json'
+
+        url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+        response = requests.get(url)
+        if response.status_code != 200:
+            print('encountered an input error')
+            if response.status_code == 500:
+                censusBlockHelperDict = self.helperToGetCensusBlock(address)
+        elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+            #if 200 status but content is corrupt or incomplete repeat
+            sleep.sleep(7)
+            censusBlockHelperDict = self.helperToGetCensusBlock(address)
+        else:
+            #if everything is perfect then continue
+            censusBlockHelperDict = json.loads(response.text)
+
+        return censusBlockHelperDict
+
+    def getCrimeHistory(self, datapoints):
+        print('getting crime history')
+
+        #getting json format
+        baseUrl = 'https://data.cityofchicago.org/resource/6zsd-86xi.json'
+        #primary type is the classifier
+        #this is not used arrest,beat,district,
+        select = '$select=description,date,latitude,longitude'
+        #date between \'\' and \'\' AND
+        where = '$where=date IS NOT NULL AND latitude IS NOT NULL AND longitude IS NOT NULL AND district IS NOT NULL AND primary_type like \'%25ROBBERY%25\' AND year>2015'
+        orderby = '$order=year DESC,id DESC,description ASC'
+        limit = '$limit=' + datapoints
+        offset = '$offset=0'
+        url = baseUrl + '?' + select + '&' + where + '&' + orderby + '&' + limit + '&' + offset
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            print(url, '\nthis url encountered url encoding problem')
+
+        crimeDict = json.loads(response.text)
+        return crimeDict
+
+    def getWeatherHistory(self):
+        print('getting weather history')
+
+        header = {'token': 'dYucmeoWuLMPXUulkTyIvsHqqUvfrLTf'}
+
+        baseurl = 'https://www.ncdc.noaa.gov/cdo-web/api/v2/'
+        endpoint = 'data?'
+        datasetID = 'datasetid=GHCND'
+        datatypeid = 'datatypeid=TAVG'
+        stationid = 'stationid=GHCND:USW00094846'
+        startDate = 'startdate=2017-04-08'
+        endDate = 'enddate=2018-04-07'
+        units = 'units=standard'
+        limit= 'limit=1000'
+        offset = 'offset=0'
+        attributes = 'includemetadata=false'
+
+        url = baseurl + endpoint + datasetID + '&' + datatypeid + '&' + stationid + '&' + startDate + '&' + endDate + '&' + units + '&' + attributes + '&'+ limit
+        response = requests.get(url, headers=header)
+
+        if response.status_code != 200:
+            print(url, '\nthis url encountered url encoding problem')
+
+        weatherHistoryDict = json.loads(response.text)
+
+        weatherHistoryDict = weatherHistoryDict['results']
+        #value = temperature
+        #date = date split at t for date[0]
+        # split - for month [1]
+
+        monthlyAverage = {}
+
+        for x in range(12):
+            valuesOfMonth = {}
+            valuesOfMonth['count'] = 0
+            valuesOfMonth['avg'] = 0
+            valuesOfMonth['temp sum'] = 0
+            monthlyAverage[x+1] = valuesOfMonth
+
+        for day in weatherHistoryDict:
+
+            dateVal,timeVal = day['date'].split('T')
+            yearVal,monthVal,dayVal = dateVal.split('-')
+            tempValue = day['value']
+
+            monthVal = int(monthVal)
+            month = monthlyAverage[monthVal]
+
+            month['count'] = month['count'] + 1
+            month['temp sum'] = month['temp sum'] + tempValue
+            month['avg'] = int(month['temp sum']/month['count'])
+
+        self.monthlyAvg = monthlyAverage
+        return weatherHistoryDict
+
+    def buildCrimeAndWeatherTable(self):
+        newCrimeTableAttributes = []
+        newCrimeTableClassifier = []
+
+        weatherData = self.getWeatherHistory()
+
+        for crime in self.crimeData:
+            longitude = crime['longitude']
+            latitude = crime['latitude']
+
+            date,time = crime['date'].split('T')
+            yyyy,mm,dd = date.split('-')
+            classifier = crime['description'] + 'monthAvg:' + str(self.monthlyAvg[int(mm)]['avg'])
+
+            data = [float(longitude), float(latitude), float(mm)]
+
+            newCrimeTableAttributes.append(data)
+            newCrimeTableClassifier.append(classifier)
+
+        self.addressCoordinates = self.getCoordinateList()
+        self.crimeData = newCrimeTableAttributes
+        self.crimeClassifier = newCrimeTableClassifier
+
+    def fitAndPredict(self):
+
+        header = ['Census Block', 'Month', 'TAVG', 'Type Of Robbery', 'Probability']
+
+        predictionDict = {}
+        dictCount = 0
+
+        predictThis = [sublist[:3] for sublist in self.addressCoordinates]
+
+        print('Beginning LR prediction')
+        logReg = LogisticRegression()
+        logReg.fit(self.crimeData, self.crimeClassifier)
+
+        y_predict = logReg.predict(predictThis)
+        y_predictProb = logReg.predict_proba(predictThis)
+
+        for x in range(len(self.addressCoordinates)):
+
+            block = self.addressCoordinates[x][4]
+            month = self.addressCoordinates[x][2]
+            description,avgTemp = y_predict[x].split('monthAvg:')
+            probabilityValue = y_predictProb[x].max()
+
+            valueList = [block, month, avgTemp, description, probabilityValue]
+
+            predictionDict[dictCount] = dict(zip(header, valueList))
+            dictCount += 1
+        print('Finished LR Prediction')
+
+        print('Writing data to file predictionResults.csv')
+        newCSV = open('weatherPredictionResults.csv', 'w')
+        csvWriter = csv.DictWriter(newCSV, header)
+        csvWriter.writeheader()
+        csvWriter.writerows(predictionDict.values())
+        newCSV.close()
+
+
+class TaskTwo:
+
+    crimeData = None
+    crimeClassifier = None
+    addressToPredict = None
+    addressCoordinates = None
+
+    #cunstructor
+    def __init__(self,variables):
+        addressArray, dataPoints = self.splitAddressArrayFromDataPoints(variables)
+        self.addressToPredict = self.createAddressOneLine(addressArray)
+        self.crimeData = self.getCrimeHistory(dataPoints)
+
+    def getCoordinateList(self):
+
+        coordinatesArray = []
+
+        for address in self.addressToPredict:
+            tempDict = self.getCensusBlock(address)
+
+            if len(tempDict['result']['addressMatches']) > 0:
+                latitude = tempDict['result']['addressMatches'][0]['coordinates']['y']
+                longitude = tempDict['result']['addressMatches'][0]['coordinates']['x']
+                tempArray = [float(longitude), float(latitude), address]
+                coordinatesArray.append(tempArray)
+        return coordinatesArray
+
+    def splitAddressArrayFromDataPoints(self, variables):
+        addressUnparsed = None
+        datapointUnparsed = None
+        count = 0
+        index = 0
+        for var in variables:
+            if 'datapoints:' in var:
+                index = count
+            count += 1
+        datapoint = self.getValofData(variables.pop(index))
+        addressUnparsed = variables
+        return addressUnparsed, datapoint
+
+    def getValofData(self, datapointUnparsed):
+        name, value = datapointUnparsed.split(':')
+
+        return value
+
+    def createAddressOneLine(self, addressArray):
+        addresses = []
+        for address in addressArray:
+            number, orientation, street, streetType, city, state, zip_code = address.split(' ')
+            #check its only a number
+            number = number.split(':')[1]
+
+            #remove . or turn to abbreviation only
+            orientation = orientation.split(':')[1]
+            orientation = orientation.replace('.', '')
+            orientation = self.abbreviatedOrientation(orientation)
+
+            street = street.split(':')[1]
+
+            #remove any .
+            streetType = streetType.split(':')[1]
+            streetType = streetType.replace('.', '')
+
+            city = city.split(':')[1]
+
+            #remove any periods
+            state = state.split(':')[1]
+            state = state.replace('.', '')
+
+            zip_code = zip_code.split(':')[1]
+            newAddress = number + ' ' + orientation + ' ' + street + ' ' + streetType + ', ' + city + ', ' + state + ', ' + zip_code
+            addresses.append(newAddress)
+
+        return addresses
+
+    def abbreviatedOrientation(self, orientation):
+
+        if 'east' == orientation.lower():
+            return 'e'
+        elif 'west' == orientation.lower():
+            return 'w'
+        elif 'north' == orientation.lower():
+            return 'n'
+        elif 'south' == orientation.lower():
+            return 's'
+        return orientation
+
+    def getBlockIndex(self, list):
+
+        theRealKey = ''
+        for key in list:
+            if '2010 Census Blocks' == key:
+                theRealKey = key
+            elif 'Census Blocks' == key:
+                theRealKey = key
+        return theRealKey
+
+    def turnBooleanToBinary(self, boolValue):
+        if boolValue:
+            return 1.0
+        return 0.0
+
+    def getCensusBlock(self, address):
+        print('getting census block')
+
+        baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+        returnType = 'geographies/'
+        searchType = 'onelineaddress?'
+        benchmark = 'benchmark=Public_AR_Census2010'
+        vintage = 'vintage=Census2010_Census2010'
+        addressSearch = 'address=' + address.replace(' ', '+')
+        formatType = 'format=json'
+
+        url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+        response = requests.get(url)
+        if response.status_code != 200:
+            print('encountered an input error')
+            censusBlockDict = self.getCensusBlock(address)
+        elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+            #if 200 status but content is corrupt or incomplete repeat
+            sleep.sleep(6)
+            censusBlockDict = self.getCensusBlock(address)
+        else:
+            #if everything is perfect then continue
+            censusBlockDict = json.loads(response.text)
+
+        #using 2010 database but switch to current one to get coordinates and other info since old data doesnt have this address
+        if len(censusBlockDict['result']['addressMatches']) == 0:
+            censusBlockDict = self.helperToGetCensusBlock(address)
+
+
+        return censusBlockDict
+
+    def helperToGetCensusBlock(self, address):
+        print('census block call with different database')
+
+        baseURL = 'https://geocoding.geo.census.gov/geocoder/'
+        returnType = 'geographies/'
+        searchType = 'onelineaddress?'
+        benchmark = 'benchmark=Public_AR_Current'
+        vintage = 'vintage=Current_Current'
+        addressSearch = 'address=' + address.replace(' ', '+')
+        formatType = 'format=json'
+
+        url = baseURL + returnType + searchType + addressSearch + '&' + benchmark + '&' + vintage + '&' + formatType
+        response = requests.get(url)
+        if response.status_code != 200:
+            print('encountered an input error')
+            if response.status_code == 500:
+                censusBlockHelperDict = self.helperToGetCensusBlock(address)
+        elif 'org.springframework.dao.DataRetrievalFailureException' in response.text:
+            #if 200 status but content is corrupt or incomplete repeat
+            sleep.sleep(7)
+            censusBlockHelperDict = self.helperToGetCensusBlock(address)
+        else:
+            #if everything is perfect then continue
+            censusBlockHelperDict = json.loads(response.text)
+
+        return censusBlockHelperDict
+
+    def getCrimeHistory(self, datapoints):
+        print('getting crime history')
+
+        #getting json format
+        baseUrl = 'https://data.cityofchicago.org/resource/6zsd-86xi.json'
+        #primary type is the classifier
+        #this is not used arrest,beat,district,
+        select = '$select=primary_type,latitude,longitude'
+        where = '$where=latitude IS NOT NULL AND longitude IS NOT NULL AND district IS NOT NULL AND year>2015'
+        orderby = '$order=year DESC,id DESC,primary_type ASC'
+        limit = '$limit=' + datapoints
+        offset = '$offset=0'
+        url = baseUrl + '?' + select + '&' + where + '&' + orderby + '&' + limit + '&' + offset
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            print(url, '\nthis url encountered url encoding problem')
+
+        crimeDict = json.loads(response.text)
+        return crimeDict
+
+    def buildCrimeTable(self):
+        newCrimeTableAttributes = []
+        newCrimeTableClassifier = []
+
+        for crime in self.crimeData:
+            longitude = crime['longitude']
+            latitude = crime['latitude']
+            classifier = crime['primary_type']
+
+            data = [float(longitude), float(latitude)]
+
+            newCrimeTableAttributes.append(data)
+            newCrimeTableClassifier.append(classifier)
+
+        self.addressCoordinates = self.getCoordinateList()
+        self.crimeData = newCrimeTableAttributes
+        self.crimeClassifier = newCrimeTableClassifier
+
+    def fitAndPredict(self):
+
+        header = ['Address', 'CrimeType', 'Technique', 'Probability']
+
+        predictionDict = {}
+        dictCount = 0
+
+
+        predictThis = [sublist[:2] for sublist in self.addressCoordinates]
+
+        print('Beginning DT prediction')
+        decisionTree = DecisionTreeClassifier(max_depth=8)
+        decisionTree.fit(self.crimeData, self.crimeClassifier)
+
+        y_predict = decisionTree.predict(predictThis)
+        y_predictProb = decisionTree.predict_proba(predictThis)
+
+        for x in range(len(self.addressCoordinates)):
+            addressValue = self.addressCoordinates[x][2]
+            crimeTypeValue = y_predict[x]
+            techniqueValue = 'Decision Tree'
+            probabilityValue = y_predictProb[x].max()
+
+            valueList = [addressValue, crimeTypeValue, techniqueValue,probabilityValue]
+
+            predictionDict[dictCount] = dict(zip(header, valueList))
+            dictCount += 1
+        print('Finished DT Prediction')
+
+        print('Beginning RF prediction')
+        randomForest = RandomForestClassifier(max_depth=7)
+        randomForest.fit(self.crimeData, self.crimeClassifier)
+
+        y_predict = randomForest.predict(predictThis)
+        y_predictProb = randomForest.predict_proba(predictThis)
+
+        for x in range(len(self.addressCoordinates)):
+
+            addressValue = self.addressCoordinates[x][2]
+            crimeTypeValue = y_predict[x]
+            techniqueValue = 'Random Forest'
+            probabilityValue = y_predictProb[x].max()
+
+            valueList = [addressValue, crimeTypeValue, techniqueValue,probabilityValue]
+
+            predictionDict[dictCount] = dict(zip(header, valueList))
+            dictCount += 1
+        print('Finished RF Prediction')
+
+        print('Beginning LR prediction')
+        logReg = LogisticRegression()
+        logReg.fit(self.crimeData, self.crimeClassifier)
+
+        y_predict = logReg.predict(predictThis)
+        y_predictProb = logReg.predict_proba(predictThis)
+
+        for x in range(len(self.addressCoordinates)):
+
+            addressValue = self.addressCoordinates[x][2]
+            crimeTypeValue = y_predict[x]
+            techniqueValue = 'Logistic Regression'
+            probabilityValue = y_predictProb[x].max()
+
+            valueList = [addressValue, crimeTypeValue, techniqueValue,probabilityValue]
+
+            predictionDict[dictCount] = dict(zip(header, valueList))
+            dictCount += 1
+        print('Finished LR Prediction')
+
+        print('Writing data to file predictionResults.csv')
+        newCSV = open('predictionResults.csv', 'w')
+        csvWriter = csv.DictWriter(newCSV, header)
+        csvWriter.writeheader()
+        csvWriter.writerows(predictionDict.values())
+        newCSV.close()
+
 
 class TaskOne:
     #dict that hold valid yelp data
@@ -14,7 +599,6 @@ class TaskOne:
     #constructor
     def __init__(self, yelpDataFile):
         self.yelpData = self.trimYelpData(yelpDataFile)
-
 
     #get yelp data for grocery,school, and restaurants
     #incoming value is a string value that has the document name in csv format
@@ -40,7 +624,6 @@ class TaskOne:
                     index += 1
         yelpCSVFile.close()
         return yelpRestaurantDictionary
-
 
     #trim address by removing extra stuff
     def getModifiedAddress(self, address):
@@ -103,7 +686,6 @@ class TaskOne:
             return 'school'
         return ''
 
-
     #trim address by removing extra stuff
     def getTrimmedAddress(self, address):
         address = address.split(' ')
@@ -122,7 +704,6 @@ class TaskOne:
 
         trimedAddress = number + ' ' + orientation + ' ' + name
         return trimedAddress
-
 
     def getCensusBlock(self, address):
         print('getting census block')
@@ -187,14 +768,16 @@ class TaskOne:
         #need to get lattitude and longitude from other database
         lattitude = lat
         longitude = lng
-        # 1.5 city block radius in meters is 301 rounded up where 1 block is 1/8 a mile
-        radiusInMeters = '301'
+        # 3 city block radius in meters is 602 rounded up where 1 block is 1/8 a mile
+        radiusInMeters = '602'
         #getting json format
         baseUrl = 'https://data.cityofchicago.org/resource/6zsd-86xi.json'
         select = '$select=primary_type,location_description,arrest,year'
-        where = '$where=within_circle(location, ' + lattitude + ', ' + longitude + ', ' + radiusInMeters + ') AND year>2013'
+        where = '$where=location_description IS NOT NULL AND within_circle(location, ' + lattitude + ', ' + longitude + ', ' + radiusInMeters + ') AND year>2013'
         orderby = '$order=year DESC,primary_type ASC'
-        url = baseUrl + '?' + select + '&' + where + '&' + orderby
+        limit = '$limit=50000'
+        offset = '$offset=0'
+        url = baseUrl + '?' + select + '&' + where + '&' + orderby + '&' + limit + '&' + offset
 
         response = requests.get(url)
 
@@ -210,7 +793,6 @@ class TaskOne:
 
         crimeDict = json.loads(response.text)
         return crimeDict
-
 
     def getBusinessLicenseHistory(self, name, address):
         print('getting business license history')
