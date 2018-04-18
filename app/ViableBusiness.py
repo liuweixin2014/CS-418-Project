@@ -8,7 +8,7 @@ import requests
 class TaskEight:
 
     def __init__(self, variable):
-        print ("a")
+        
         #Read the required CSV files
         with open(variable,'r') as restaurant:
             reader = csv.reader(restaurant)
