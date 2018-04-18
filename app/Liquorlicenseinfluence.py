@@ -8,7 +8,7 @@ import re
 class TaskNine:
 
     def __init__(self, variable):
-        print ("b")
+        
         #Commented out the sleep command
         def getCensusBlock9(address):
             print('getting census block')
