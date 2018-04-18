@@ -25,6 +25,9 @@ Navigate to following folder/directory on terminal
   
 on terminal run following command and check Commands and Mandatory Optios for further details
   python3 aceApp.py <command>
+  
+  example on a MAC:
+    $ python3 ./aceApp.py -weather_and_crime "number:807 orientation:w street:roosevelt streetType:rd city:Chicago state:il zip_code:60608" "number:6000 orientation:S street:Pulaski streetType:Ave city:Chicago state:il zip_code:60629" "datapoints:600000"
 
 
 
@@ -83,7 +86,7 @@ Mandatory Optios: All options are seperated by a space
     zip_code:<5 digit zip code>
     
     Example:
-      "number:6001 orientation:S street:Karlov streetType:Ave city:Chicago state:il zip_code:60629" 
+      "number:6000 orientation:S street:Pulaski streetType:Ave city:Chicago state:il zip_code:60629" 
   
   DataPointValue:
     datapoints:<positive integer value of max datapoints desired to use from crime data portal>
