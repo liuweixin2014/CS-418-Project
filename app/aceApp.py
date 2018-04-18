@@ -459,7 +459,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             data0=reviews[['reviewContent','rating']]
             data0['rating'].value_counts()
@@ -504,7 +504,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             data0=reviews[['reviewContent','rating']]
             data0['rating'].value_counts()
@@ -549,7 +549,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             restaurant['label'] = np.where(restaurant['rating']>=4,1,0)
             restaurant['label'].value_counts()
