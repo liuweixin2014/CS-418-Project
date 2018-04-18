@@ -305,7 +305,7 @@ def getBlockIndex(list):
 
 def templateFunction():
     #file to retrieve restaurant data from yelp csv file
-    restaurantYelp = csv.reader(open('restaurants_60601-60606.csv', 'r'))
+    restaurantYelp = csv.reader(open('../data/restaurants_60601-60606.csv', 'r'))
 
 
     #get weather data
@@ -432,7 +432,7 @@ if __name__ == '__main__':
         variables = x
         if crimeReport in argument:
             print('task 1')
-            taskOne = TaskOne('restaurants_60601-60606.csv')
+            taskOne = TaskOne('../data/restaurants_60601-60606.csv')
             taskOne.buildTable()
             print('done')
         elif predictCrimeProbability in argument:
@@ -459,7 +459,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             data0=reviews[['reviewContent','rating']]
             data0['rating'].value_counts()
@@ -504,7 +504,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             data0=reviews[['reviewContent','rating']]
             data0['rating'].value_counts()
@@ -549,7 +549,7 @@ if __name__ == '__main__':
             from sklearn.metrics import f1_score
             from sklearn.metrics import precision_score
             from sklearn.metrics import recall_score
-            restaurant=pd.read_csv('restaurants_60601-60606.csv')
+            restaurant=pd.read_csv('../data/restaurants_60601-60606.csv')
             reviews=pd.read_csv("reviews_60601-60606.csv",error_bad_lines=False)
             restaurant['label'] = np.where(restaurant['rating']>=4,1,0)
             restaurant['label'].value_counts()
@@ -590,11 +590,11 @@ if __name__ == '__main__':
             print(recall_score)
         elif businessViability in argument:
             print('task 8')
-            taskEight = TaskEight('restaurants_60601-60606.csv')
+            taskEight = TaskEight('../data/restaurants_60601-60606.csv')
             print ('done')
         elif liquorAndCrime in argument:
             print('task 9')
-            taskNine = TaskNine('restaurants_60601-60606.csv')
+            taskNine = TaskNine('../data/restaurants_60601-60606.csv')
             print('done')
         elif weatherAndCrime in argument:
             print('task 10')
