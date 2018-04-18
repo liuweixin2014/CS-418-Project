@@ -1,0 +1,7 @@
+Address,CrimeType,Technique,Probability
+"807 w roosevelt rd, Chicago, il, 60608",THEFT,Decision Tree,0.32126899017
+"6000 S Pulaski Ave, Chicago, il, 60629",CRIMINAL DAMAGE,Decision Tree,0.178260869565
+"807 w roosevelt rd, Chicago, il, 60608",THEFT,Random Forest,0.343175234059
+"6000 S Pulaski Ave, Chicago, il, 60629",THEFT,Random Forest,0.180912023675
+"807 w roosevelt rd, Chicago, il, 60608",THEFT,Logistic Regression,0.260934098904
+"6000 S Pulaski Ave, Chicago, il, 60629",BATTERY,Logistic Regression,0.218194376267
