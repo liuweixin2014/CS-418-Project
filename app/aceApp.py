@@ -7,6 +7,8 @@ import time as sleep
 from TaskOneTwoAndTen import TaskOne
 from TaskOneTwoAndTen import TaskTwo
 from TaskOneTwoAndTen import TaskTen
+from ViableBusiness import TaskEight
+from Liquorlicenseinfluence import TaskNine
 
 #websites
 #
@@ -588,8 +590,12 @@ if __name__ == '__main__':
             print(recall_score)
         elif businessViability in argument:
             print('task 8')
+            taskEight = TaskEight('restaurants_60601-60606.csv')
+            print ('done')
         elif liquorAndCrime in argument:
             print('task 9')
+            taskNine = TaskNine('restaurants_60601-60606.csv')
+            print('done')
         elif weatherAndCrime in argument:
             print('task 10')
             taskTen = TaskTen(variables)
