@@ -110,7 +110,7 @@ class TaskEight:
 
 
         #Open csv file to write
-        OutputFile = open('ViableBusiness.csv', 'w')
+        OutputFile = open('../results/ViableBusiness.csv', 'w')
         with OutputFile:
             writer = csv.writer(OutputFile)
             writer.writerows([['Restaurant Name','Address','Failed Inspection on','Alive for x years']])
