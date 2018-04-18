@@ -190,7 +190,7 @@ class TaskNine:
 
 
         # Open csv file to write
-        OutputFile = open('LiquorLicense.csv', 'w')
+        OutputFile = open('../results/LiquorLicense.csv', 'w')
         with OutputFile:
             writer = csv.writer(OutputFile)
             writer.writerows([['Census Block', '#Businesses with liquor licenses', '#Crimes', '#Arrests']])
