@@ -305,7 +305,7 @@ class TaskTen:
         print('Finished LR Prediction')
 
         print('Writing data to file predictionResults.csv')
-        newCSV = open('weatherPredictionResults.csv', 'w')
+        newCSV = open('../results/weatherPredictionResults.csv', 'w')
         csvWriter = csv.DictWriter(newCSV, header)
         csvWriter.writeheader()
         csvWriter.writerows(predictionDict.values())
@@ -582,7 +582,7 @@ class TaskTwo:
         print('Finished LR Prediction')
 
         print('Writing data to file predictionResults.csv')
-        newCSV = open('predictionResults.csv', 'w')
+        newCSV = open('../results/predictionResults.csv', 'w')
         csvWriter = csv.DictWriter(newCSV, header)
         csvWriter.writeheader()
         csvWriter.writerows(predictionDict.values())
@@ -887,7 +887,7 @@ class TaskOne:
         return False
 
     def buildTable(self):
-        self.OutPutData = 'CrimeBusinessYelpData.csv'
+        self.OutPutData = '../results/CrimeBusinessYelpData.csv'
         headerAndDictKeys = ['Year', 'BusinessType', 'BusinessName', 'Address', 'HasTobaccoLicense', 'HasLiquorLicense', 'CrimeType', '#Crime', '#Arrests', '#OnPremises']
 
         #create doc to store data in
