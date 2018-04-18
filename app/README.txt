@@ -50,8 +50,14 @@ Commands:
   -predict_review
   
   -business_viability
+    This command requires restaurants_60601-60606.csv file
+    This command will generate a 'ViableBusiness.csv' file with the required output
+    This command is Task Eight
     
   -liquor_and_crime
+    This command requires restaurants_60601-60606.csv file
+    This command will generate a 'LiquorLicense.csv' file with the required output
+    This command is Task Nine
      
   -weather_and_crime <AddressString> ... <DataPointValue>
     You will need to request a key from https://www.ncdc.noaa.gov/cdo-web/webservices/v2 and place it line 203 within the getWeatherHistory() in file TaskOneTwoAndTen.py
