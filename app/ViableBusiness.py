@@ -1,62 +1,115 @@
 #Import required libraries
 import csv
 from datetime import date
+import re
+import json
+import requests
 
-#Read the required CSV files
-with open('restaurants_60601-60606.csv','r') as restaurant:
-    reader = csv.reader(restaurant)
-    restaurant_list = list(reader)
+class TaskEight:
 
-with open('Food_Inspections.csv','r') as inspection:
-    reader = csv.reader(inspection)
-    inspection_list = list(reader)
+    #Read the required CSV files
+    with open('restaurants_60601-60606.csv','r') as restaurant:
+        reader = csv.reader(restaurant)
+        restaurant_list = list(reader)
 
-output_list = []
+    output_list = []
 
-#For each restaurant name in list check with food inspection
-for each_restaurant in restaurant_list:
-    restaurant_name = each_restaurant[1].strip().lower()
-    restaurant_address = each_restaurant[6].strip().lower()
+    def getFoodInspectionHistory8(name, address):
+        print('getting food inspection history')
+        # oldAddress = address
+        # address, city, state, zipcode = address.split(',')
+        # address = getTrimmedAddress(address)
+        address = address.upper()
+        # remove characters that will encounter problems in the requests parser and replace with wildcard character
+        name = name.upper().replace('\'', '_').replace('&', '_')
 
-    for each_inspection in inspection_list:
-        inspection_name = each_inspection[2].strip().lower()
-        inspection_address = each_inspection[6].strip().lower()
-        inspection_result = each_inspection[12].strip().lower()
-        inspection_date = each_inspection[10].strip()
+        baseUrl = 'https://data.cityofchicago.org/resource/cwig-ma7x.json'
+        select = '$select=aka_name,dba_name,facility_type,risk,inspection_date,inspection_type,results,violations'
+        where = '$where=address like ' + "'%25" + address + "%25'" + ' AND (aka_name like ' + "'%25" + name + "%25' " + 'OR dba_name like ' + "'%25" + name + "%25'" + ')'
+        orderby = '$order=inspection_date DESC'
+        url = baseUrl + '?' + select + '&' + where + '&' + orderby
 
-        if ((inspection_name in restaurant_name) and (inspection_address in restaurant_address) and inspection_result=='out of business'):
+        myurl = url.encode('utf-8')
+        response = requests.get(myurl)
 
-            for each_inspection1 in inspection_list:
-                inspection_name1 = each_inspection1[2].strip().lower()
-                inspection_address1 = each_inspection1[6].strip().lower()
-                inspection_result1 = each_inspection1[12].strip().lower()
-                inspection_date1 = each_inspection1[10].strip()
+        if response.status_code != 200:
+            print(url, '\nthis url encountered url encoding problem')
+            foodInspectionDict = []
+            return foodInspectionDict
 
-                if ((inspection_name1 in restaurant_name) and len(inspection_name1) != 0 and (inspection_address1 in restaurant_address) and inspection_result1.lower() == 'fail'):
 
-                    buffer_date = inspection_date.split('/')
-                    closed_year = int(buffer_date[2])
-                    closed_month = int(buffer_date[0])
-                    closed_day = int(buffer_date[1])
-                    closed_date = date(closed_year, closed_month, closed_day)
+        # turn data to dict representation
+        foodInspectionDict = json.loads(response.text)
+        return foodInspectionDict
 
-                    buffer_date1 = inspection_date1.split('/')
-                    fail_year = int(buffer_date1[2])
-                    fail_month = int(buffer_date1[0])
-                    fail_day = int(buffer_date1[1])
-                    fail_date = date(fail_year, fail_month, fail_day)
+    #For each restaurant name in list check with food inspection
+    for each_restaurant in restaurant_list[1:]:
+        restaurant_name = each_restaurant[1].strip().lower()
+        restaurant_address = each_restaurant[6].strip().lower()
+        name_first = restaurant_address.split(',')[0]
+        result = re.match(r'^[\d]+$', name_first[0])
 
-                    if (closed_date > fail_date):
-                        delta = closed_date - fail_date
-                        delta = str(delta).split(' ')
-                        NoOfYearsActive = round((float(delta[0])/364),2)
-                        output_list.append([restaurant_name,restaurant_address,inspection_date1,NoOfYearsActive])
+        # Steps to retrieve required restaurant address
+        if (len(name_first.split(' ')) > 2 and result):
+
+            if (len(name_first.split(' ')) == 3):
+                required_restaurant_address = name_first.split(' ')[0] + ' ' + name_first.split(' ')[1] + ' ' + \
+                                              name_first.split(' ')[2]
+            elif (name_first.split(' ')[3][0] != '(' or not name_first.split(' ')[3]):
+                required_restaurant_address = name_first.split(' ')[0] + ' ' + name_first.split(' ')[1] + ' ' + \
+                                              name_first.split(' ')[2] + ' ' + name_first.split(' ')[3]
+            else:
+                required_restaurant_address = name_first.split(' ')[0] + ' ' + name_first.split(' ')[1] + ' ' + \
+                                              name_first.split(' ')[2]
+
+            required_restaurant_address = required_restaurant_address.replace('.', '')
+
+        else:
+            for i, each in enumerate(name_first.split(' ')):
+
+                if (re.match(r'^[\d]+$', each) and len(name_first.split(' ')) > 2):
+
+                    if (len(name_first.split(' ')) - i > 3):
+                        required_restaurant_address = each + ' ' + name_first.split(' ')[i + 1] + ' ' + \
+                                                      name_first.split(' ')[i + 2] + ' ' + name_first.split(' ')[i + 3]
                         break
-            break
+                    else:
+                        required_restaurant_address = each + ' ' + name_first.split(' ')[i + 1] + ' ' + \
+                                                      name_first.split(' ')[i + 1]
+                        break
 
-#Open csv file to write
-OutputFile = open('ViableBusiness.csv', 'w')
-with OutputFile:
-    writer = csv.writer(OutputFile)
-    writer.writerows([['Restaurant Name','Address','Failed Inspection on','Alive for x years']])
-    writer.writerows(output_list)
+                required_restaurant_address = ''
+
+        foodInspectionHistory = getFoodInspectionHistory8(restaurant_name,required_restaurant_address)
+        for inspection in foodInspectionHistory:
+
+            if (inspection['results'].upper() == 'OUT OF BUSINESS'):
+                out_Date = inspection['inspection_date'][0:10]
+                out_Year = int(out_Date[0:4])
+                out_Month = int(out_Date[5:7])
+                out_Day = int(out_Date[8:10])
+                out_of_business_date = date(out_Year, out_Month, out_Day)
+
+                for each in foodInspectionHistory:
+                    if (each['results'].upper() == 'FAIL'):
+                        fail_Date = each['inspection_date'][0:10]
+                        fail_Year = int(fail_Date[0:4])
+                        fail_Month = int(fail_Date[5:7])
+                        fail_Day = int(fail_Date[8:10])
+                        fail_date = date(int(fail_Year), int(fail_Month), int(fail_Day))
+
+                        if (out_of_business_date > fail_date):
+                            delta = out_of_business_date - fail_date
+                            delta = str(delta).split(' ')
+                            NoOfYearsActive = round((float(delta[0])/364),2)
+                            output_list.append([restaurant_name,restaurant_address,fail_date,NoOfYearsActive])
+                            break
+                break
+
+
+    #Open csv file to write
+    OutputFile = open('ViableBusiness.csv', 'w')
+    with OutputFile:
+        writer = csv.writer(OutputFile)
+        writer.writerows([['Restaurant Name','Address','Failed Inspection on','Alive for x years']])
+        writer.writerows(output_list)
