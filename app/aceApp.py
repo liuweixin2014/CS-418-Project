@@ -9,6 +9,8 @@ from TaskOneTwoAndTen import TaskTwo
 from TaskOneTwoAndTen import TaskTen
 from ViableBusiness import TaskEight
 from Liquorlicenseinfluence import TaskNine
+#================================================================
+from Inspection import Inspection
 
 #websites
 #
@@ -23,11 +25,9 @@ from Liquorlicenseinfluence import TaskNine
 #https://www.ncdc.noaa.gov/cdo-web/webservices/v2
 #token is needed for weather calls
 
-
 #get all crime data within 1.5 block radius and from 2014 to present
 def getCrimeHistory(lat, long):
     print('getting crime history')
-
     #need to get lattitude and longitude from other database
     lattitude = lat
     longitude = long
@@ -54,19 +54,18 @@ def getCrimeHistory(lat, long):
     crimeDict = json.loads(response.text)
     return crimeDict
 
-
 #trim address by removing extra stuff
 def getModifiedAddress(address):
     address = address.split(' ')
 
     count = 0
-    
+
     number = ''
     orientation = ''
     name = ''
     city = ''
     state = ''
-    
+
     for x in address:
         x = x.replace('.', '')
         if count == 0:
@@ -251,11 +250,11 @@ def getCensusBlock(address):
     else:
         #if everything is perfect then continue
         censusBlockDict = json.loads(response.text)
-    
+
     #using 2010 database but switch to current one to get coordinates and other info since old data doesnt have this address
     if len(censusBlockDict['result']['addressMatches']) == 0:
         censusBlockDict = helperToGetCensusBlock(address)
-        
+
     return censusBlockDict
 
 
@@ -332,7 +331,7 @@ def templateFunction():
 
         #get data from databases we might need
         if 'education' in restaurantInfo['categories'].lower() or 'restaurant' in restaurantInfo['categories'].lower() or 'grocery' in restaurantInfo['categories'].lower() or '':
-            
+
             print('Count:', businessCount, ' id:', restaurantInfo['restaurantID'])
             #pull addrerss from yelp info
             address = restaurantInfo['address']
@@ -441,16 +440,20 @@ if __name__ == '__main__':
             taskTwo.buildCrimeTable()
             taskTwo.fitAndPredict()
             print('done')
-        elif graphCrimeAgeBlock in argument:
-            print('task 3')
+##===========================================================
+
         elif reviewInspection in argument:
             print('task 4')
+            TaskFour = TaskFour('../data/restaurants_60601-60606.csv')
+            print('done')
+
+
         elif sentimentReviewAnalysis in argument:
             print('task 5')
-            import pandas as pd 
+            import pandas as pd
             import numpy as np
             import matplotlib.pyplot as plt
-            from sklearn.feature_extraction.text import TfidfVectorizer 
+            from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.feature_extraction.text import CountVectorizer
             from sklearn.model_selection import train_test_split
             from sklearn.utils.random import sample_without_replacement
@@ -492,10 +495,10 @@ if __name__ == '__main__':
             print(recall_score)
         elif restaurantSentimentAndReview in argument:
             print('task 6')
-            import pandas as pd 
+            import pandas as pd
             import numpy as np
             import matplotlib.pyplot as plt
-            from sklearn.feature_extraction.text import TfidfVectorizer 
+            from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.feature_extraction.text import CountVectorizer
             from sklearn.model_selection import train_test_split
             from sklearn.utils.random import sample_without_replacement
@@ -537,10 +540,10 @@ if __name__ == '__main__':
             print(recall_score)
         elif predictReview in argument:
             print('task 7')
-            import pandas as pd 
+            import pandas as pd
             import numpy as np
             import matplotlib.pyplot as plt
-            from sklearn.feature_extraction.text import TfidfVectorizer 
+            from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.feature_extraction.text import CountVectorizer
             from sklearn.model_selection import train_test_split
             from sklearn.utils.random import sample_without_replacement
