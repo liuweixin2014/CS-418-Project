@@ -1,0 +1,101 @@
+Restaurant Name,Address,Failed Inspection on,Alive for x years
+au bon pain,"125 s wacker dr (between adams st & clark st) chicago, il 60606 neighborhood: the loop",2011-07-11,1.04
+corner bakery cafe,"233 s wacker dr chicago, il 60601 neighborhood: the loop",2012-01-03,5.37
+falafill,"72 e adams st chicago, il 60604 neighborhood: the loop",2012-04-17,1.91
+tokyo lunch boxes & catering,"111 e wacker dr (between beaubien ct & lower wacker dr) chicago, il 60601 neighborhood: the loop",2012-10-10,1.67
+walgreens,"300 n michigan ave (between wacker pl & macchesneyer dr) chicago, il 60601 neighborhood: the loop",2012-11-08,2.51
+haifa cafe,"19 n wells st chicago, il 60606 neighborhood: the loop",2015-10-26,1.51
+sweet factory,"100 w randolph st upper 105 (between michigan ave & beaubien ct) chicago, il 60601 neighborhood: the loop",2011-01-20,2.79
+taco fresco,"23 e adams st (between state st & dearborn st) chicago, il 60603 neighborhood: the loop",2014-06-17,1.69
+pret a manger,"211 w adams st (between wells st & franklin st) chicago, il 60606 neighborhood: the loop",2017-04-25,0.72
+protein bar,"10 s clinton st chicago, il 60606 neighborhood: near west side",2011-08-16,5.23
+ruby of siam,"170 w washington st (between la salle st & wells st) chicago, il 60602 neighborhood: the loop",2012-08-30,3.13
+courtway restaurant,"29 s la salle st (between arcade pl & monroe st) chicago, il 60603 neighborhood: the loop",2013-08-15,0.73
+thai spoon,"601 s wabash ave (between harrison st & balbo ave) chicago, il 60605 neighborhood: south loop",2013-08-09,2.71
+freshii,"311 s wacker dr (between franklin st & jackson blvd) chicago, il 60606 neighborhood: the loop",2014-10-28,2.77
+maxim's restaurant,"20 n clark st (between calhoun pl & madison st) chicago, il 60602 neighborhood: the loop",2015-08-20,1.3
+union station,"225 s canal st (between adams st & milwaukee ave) chicago, il 60606 neighborhood: near west side",2012-01-03,2.04
+jamba juice,"190 w madison st (between la salle st & wells st) chicago, il 60602 neighborhood: the loop",2013-02-25,1.62
+brasserie by lm,"800 s michigan ave (between balbo ave & 9th st) chicago, il 60605 neighborhood: south loop",2014-12-03,1.35
+wisma,"the french market ogilvie station chicago, il 60606",2014-09-29,0.56
+alain's,"1355 s michigan ave (between 13th st & 14th st) chicago, il 60605 neighborhood: near southside",2012-07-24,0.52
+silk road jackson,"216 w jackson blvd ste 1 (between franklin st & wells st) chicago, il 60606 neighborhood: the loop",2011-01-20,1.66
+berghoff catering,"17 w adams st (between state st & dearborn st) chicago, il 60603 neighborhood: the loop",2013-04-10,2.88
+haute sausage,"chicago, il 60606",2014-05-01,2.4
+hotel monaco,"225 n wabash ave chicago, il 60601 neighborhood: the loop",2013-02-06,0.85
+california pizza kitchen,"30 n la salle st ste 2024 (between washington st & calhoun pl) chicago, il 60602 neighborhood: the loop",2010-02-08,3.37
+pockets,"309 w lake st (between franklin st & wacker dr) chicago, il 60606 neighborhood: the loop",2016-12-05,0.49
+zapatista,"1307 s wabash ave (between 13th st & 14th st) chicago, il 60605 neighborhood: near southside",2014-12-17,0.5
+subway,"166 w washington st (between la salle st & wells st) chicago, il 60602 neighborhood: the loop",2010-03-26,2.68
+the tower club,"20 n wacker dr (between madison st & state st) chicago, il 60606 neighborhood: the loop",2010-08-04,2.99
+flavor 180,"1511 s state st (at 15th st) chicago, il 60605 neighborhood: near southside",2014-02-07,1.51
+the india grill,"1112 s wabash ave (between 11th st & roosevelt rd) chicago, il 60605 neighborhood: south loop",2010-10-06,0.26
+starbucks,"68 e madison st (between wabash ave & garland ct) chicago, il 60602 neighborhood: the loop",2014-06-11,3.05
+ponte fresco,"225 n michigan ave (between wacker pl & lake st) chicago, il 60601 neighborhood: the loop",2011-07-27,1.01
+a mano,"335 n dearborn st chicago, il 60601 neighborhood: near north side",2010-01-25,0.85
+jaffa bakery,"105 w madison st (between clark st & la salle st) chicago, il 60602 neighborhood: the loop",2012-04-10,1.37
+jimmy figs,"160 n franklin st (between couch pl & randolph st) chicago, il 60606 neighborhood: the loop",2010-06-22,3.16
+houlihan's,"111 e wacker (between michigan ave & lower wacker dr) chicago, il 60601 neighborhood: the loop",2013-10-21,2.43
+la cocina,"406 s clark st (between congress pky & van buren st) chicago, il 60605 neighborhood: the loop",2010-02-23,0.72
+tokyo lunch boxes & catering,"100 w randolph st (between michigan ave & beaubien ct) chicago, il 60601 neighborhood: the loop",2017-01-27,0.86
+waffles,"1400 s michigan (at 14th st) chicago, il 60605 neighborhood: near southside",2016-05-19,0.34
+venice cafe,"233 s wacker dr lower level 1 (between adams st & wells st) chicago, il 60606 neighborhood: the loop",2014-12-16,2.74
+panera bread,"250 s wacker dr (between adams st & wells st) chicago, il 60606 neighborhood: the loop",2015-01-20,2.0
+jimmy john's,"28 n clark st (between calhoun pl & washington st) chicago, il 60602 neighborhood: the loop",2014-02-21,2.21
+la cocina,"178 n franklin st (between monroe st & couch pl) chicago, il 60606 neighborhood: the loop",2014-04-28,2.75
+taco fresco,"180 n wells st chicago, il 60606 neighborhood: the loop",2014-06-24,0.41
+native foods cafe,"218 s clark st chicago, il 60604 neighborhood: the loop",2016-08-15,0.7
+starbucks,"8 n michigan ave chicago, il 60602 neighborhood: the loop",2011-07-07,4.46
+mccormick & schmick's,"one e. wacker dr. chicago, il 60601 neighborhood: the loop",2017-06-08,0.4
+popeyes,"17 s wabash ave chicago, il 60603 neighborhood: the loop",2012-09-20,3.81
+mcdonald's,"230 s state st (between quincy st & jackson blvd) chicago, il 60604 neighborhood: the loop",2014-10-23,0.64
+cafe 333,"333 w. wacker (between columbus dr & field blvd) chicago, il 60601 neighborhood: the loop",2010-08-24,2.83
+america's dog,"21 e adams st (between dearborn st & state st) chicago, il 60603 neighborhood: the loop",2012-07-31,2.98
+atwood cafe,"1 w washington st (between state st & holden ct) chicago, il 60602 neighborhood: the loop",2016-07-14,0.41
+coogan's riverside saloon,"180 n wacker dr ste 1 (between monroe st & lasalle st) chicago, il 60606 neighborhood: the loop",2010-09-22,2.06
+mixed greens,"223 w lake st (between post pl & wells st) chicago, il 60606 neighborhood: the loop",2011-02-01,3.58
+caribou coffee,"55 w monroe st (between michigan ave & wabash ave) chicago, il 60603 neighborhood: the loop",2013-04-09,1.54
+brian's juice bar & deli,"80 e lake st (between dearborn st & garland ct) chicago, il 60601 neighborhood: the loop",2013-10-16,0.09
+7-eleven,"128 n la salle st (between court pl & randolph st) chicago, il 60602 neighborhood: the loop",2010-11-19,1.88
+avec,"615 w randolph st chicago, il 60606 neighborhood: near west side",2016-03-31,1.63
+bombay wraps,"122 n wells st chicago, il 60606 neighborhood: the loop",2010-05-17,4.1
+hyatt regency chicago,"151 e wacker dr (between beaubien ct & stetson ave) chicago, il 60601 neighborhood: the loop",2010-10-06,2.23
+corner bakery cafe,"222 s riverside plz (between adams st & jackson blvd) chicago, il 60606 neighborhood: near west side",2011-11-18,5.84
+panda express,"209 w jackson blvd (between franklin st & wells st) chicago, il 60606 neighborhood: the loop",2011-11-29,0.62
+little branch cafe,"1251 s prairie ave chicago, il 60605 neighborhood: near southside",2015-05-27,2.33
+jamba juice,"225 s canal st (between adams st & fulton st) chicago, il 60606 neighborhood: near west side",2012-09-10,2.06
+hotel burnham,"1 w washington st chicago, il 60601 neighborhood: the loop",2016-07-14,0.41
+quizno's,"128 s franklin st (between adams st & court pl) chicago, il 60606 neighborhood: the loop",2012-09-26,0.34
+jamba juice,"166 n state st (between randolph st & benton pl) chicago, il 60601 neighborhood: the loop",2011-05-03,4.46
+harold's chicken shack,"636 s wabash ave (between balbo ave & harrison st) chicago, il 60605 neighborhood: south loop",2010-09-14,0.1
+bar louie,"47 w polk st (between dearborn st & federal st) chicago, il 60605 neighborhood: south loop",2013-08-13,0.1
+i dream of falafel,"112 w monroe st (at michigan ave) chicago, il 60603 neighborhood: the loop",2013-12-20,0.42
+tamarind,"614 s wabash ave (between balbo ave & harrison st) chicago, il 60605 neighborhood: south loop",2016-08-18,0.42
+boston blackies,"120 s riverside plz (between adams st & monroe st) chicago, il 60606 neighborhood: near west side",2012-10-01,0.88
+block 37,"108 n state st (between washington st & court pl) chicago, il 60602 neighborhood: the loop",2017-01-19,0.53
+alonti deli,"300 s riverside plz (between jackson blvd & van buren st) chicago, il 60606 neighborhood: near west side",2011-09-06,1.59
+pita heaven,"1250 s michigan ave (between roosevelt rd & 13th st) chicago, il 60605 neighborhood: near southside",2011-06-06,4.65
+green apple,"201 n clark st 2nd floor (between lake st & haddock pl) chicago, il 60601 neighborhood: the loop",2015-11-23,0.04
+protein bar,"235 s franklin st (between lake st & quincy st) chicago, il 60606 neighborhood: the loop",2016-02-04,0.88
+starbucks,"233 s wacker dr (between adams st & wells st) chicago, il 60606 neighborhood: the loop",2010-07-15,3.36
+au bon pain,"200 w adams st (between wells st & franklin st) chicago, il 60606 neighborhood: the loop",2011-04-04,1.26
+einstein bros. bagels,"75 e. lake st. (between garland ct & dearborn st) chicago, il 60601 neighborhood: the loop",2010-12-03,2.84
+halo asian mix,"29 e adams st (between state st & dearborn st) chicago, il 60603 neighborhood: the loop",2014-06-17,0.02
+fast foo's,"28 e jackson blvd (between state st & wabash ave) chicago, il 60604 neighborhood: the loop",2011-01-10,2.13
+wendy's,"6 s clark st chicago, il 60603 neighborhood: the loop",2015-09-30,1.54
+currents on the river,"200 s wacker dr (between post pl & adams st) chicago, il 60606 neighborhood: the loop",2010-12-02,2.64
+sbarro,"233 n michigan ave (between wacker pl & lake st) chicago, il 60601 neighborhood: the loop",2011-01-10,1.83
+soldier field,"1410 s museum campus dr gate 14 chicago, il 60605 neighborhood: near southside",2013-08-29,0.21
+south water kitchen,"225 n wabash ave chicago, il 60601 neighborhood: the loop",2013-02-06,0.85
+blackie's,"755 s clark st (between harrison st & polk st) chicago, il 60605 neighborhoods: printer's row, south loop",2013-05-07,4.66
+jamba juice,"209 w jackson blvd (between franklin st & wells st) chicago, il 60606 neighborhood: the loop",2012-07-11,1.47
+harry's sandwich shop,"336 s dearborn st chicago, il 60604 neighborhood: the loop",2017-02-27,0.31
+cosi,"203 n la salle st (between haddock pl & lake st) chicago, il 60601 neighborhood: the loop",2012-02-17,4.96
+jimmy john's,"180 n la salle st (between couch pl & lake st) chicago, il 60601 neighborhood: the loop",2014-10-09,2.02
+haifa cafe,"24 e adams (between wabash ave & dearborn st) chicago, il 60603 neighborhood: the loop",2013-09-26,0.13
+artist's cafe,"1150 s wabash (between 11th st & roosevelt rd) chicago, il 60605 neighborhood: south loop",2016-08-23,1.18
+jimmy green's,"825 s state st (between polk st & 9th st) chicago, il 60605 neighborhood: south loop",2010-04-29,7.08
+andy's frozen custard,"108 n state st chicago, il 60601 neighborhood: the loop",2010-09-16,2.5
+freshii,"111 w jackson blvd (at michigan ave) chicago, il 60604 neighborhood: the loop",2010-08-16,3.42
+banh mi express sandwiches,"105 w madison st ste 109b (between clark st & la salle st) chicago, il 60603 neighborhood: the loop",2012-04-10,1.29
+mrs. fields cookies,"225 s canal st (between adams st & milwaukee ave) chicago, il 60606 neighborhood: near west side",2010-03-18,3.06
